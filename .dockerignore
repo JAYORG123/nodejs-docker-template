@@ -1,0 +1,147 @@
+# ============================================
+
+# .dockerignore
+
+# ============================================
+
+# This file tells Docker which files/directories to exclude from the build context
+
+# Similar to .gitignore but for Docker builds
+
+# Excluding unnecessary files makes builds faster and images smaller
+
+# ============================================
+
+# Node.js Specific
+
+# ============================================
+
+# node_modules should be excluded because:
+
+# 1. They're large and slow down build context transfer
+
+# 2. We install them fresh in the Dockerfile with npm ci
+
+# 3. Local node_modules might be for different OS/architecture
+
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log\*
+
+# ============================================
+
+# TypeScript Build Output
+
+# ============================================
+
+# Exclude compiled files - they'll be built inside the container
+
+dist
+\*.tsbuildinfo
+
+# ============================================
+
+# Environment & Configuration
+
+# ============================================
+
+# Never include sensitive information in Docker images
+
+.env
+.env._
+!.env.example
+_.local
+
+# ============================================
+
+# Git & Version Control
+
+# ============================================
+
+.git
+.gitignore
+.gitattributes
+.github
+
+# ============================================
+
+# IDE & Editor Files
+
+# ============================================
+
+.vscode
+.idea
+_.swp
+_.swo
+\*.swn
+.DS_Store
+Thumbs.db
+
+# ============================================
+
+# Docker Files
+
+# ============================================
+
+# Don't include Docker files in the build context
+
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# ============================================
+
+# Documentation & CI/CD
+
+# ============================================
+
+README.md
+\*.md
+LICENSE
+.editorconfig
+
+# CI/CD configuration files
+
+.gitlab-ci.yml
+.travis.yml
+.circleci
+azure-pipelines.yml
+
+# ============================================
+
+# Testing & Coverage
+
+# ============================================
+
+test
+tests
+**tests**
+_.test.js
+_.spec.js
+coverage
+.nyc_output
+
+# ============================================
+
+# Build Artifacts & Logs
+
+# ============================================
+
+dist
+build
+_.log
+logs
+_.pid
+_.seed
+_.pid.lock
+
+# ============================================
+
+# Temporary Files
+
+# ============================================
+
+tmp
+temp
+\*.tmp

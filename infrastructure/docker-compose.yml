@@ -1,0 +1,178 @@
+# ============================================
+# DOCKER COMPOSE FOR PRODUCTION
+# ============================================
+# This is a production-optimized Docker Compose configuration
+# Key differences from development:
+# - No volume mounting for source code
+# - Production build target
+# - No development tools (like Mongo Express)
+# - Enhanced security settings
+# - Resource limits
+
+services:
+  # --------------------------------------------
+  # Node.js Application Service (Production)
+  # --------------------------------------------
+  app:
+    image: nodejs-app-prod:latest
+    build:
+      # Context is the project root directory (one level up from this compose file)
+      context: ..
+      # Use the Dockerfile
+      dockerfile: infrastructure/Dockerfile
+
+    container_name: nodejs-app-prod
+
+    # Restart always in production for high availability
+    restart: unless-stopped
+
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017/dockerapp
+      - PORT=3000
+
+    ports:
+      - "3000:3000"
+
+    # Resource limits to prevent container from consuming too much
+    deploy:
+      resources:
+        limits:
+          # Maximum CPU usage (1.0 = 1 core)
+          cpus: "1.0"
+          # Maximum memory
+          memory: 512M
+        reservations:
+          # Guaranteed minimum resources
+          cpus: "0.5"
+          memory: 256M
+
+    # Health check for the application
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--quiet",
+          "--tries=1",
+          "--spider",
+          "http://localhost:3000/health",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+    depends_on:
+      mongodb:
+        condition: service_healthy
+
+    networks:
+      - app-network
+
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # --------------------------------------------
+  # MongoDB Database Service (Production)
+  # --------------------------------------------
+  mongodb:
+    image: mongo:7
+
+    container_name: mongodb-prod
+
+    restart: always
+
+    # IMPORTANT: In production, ALWAYS use authentication
+    environment:
+      # Set root username and password
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME:-admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-changeme}
+      MONGO_INITDB_DATABASE: dockerapp
+
+    # Only expose MongoDB to application network, not to host
+    # Remove or comment out 'ports' in production for better security
+    # ports:
+    #   - "27017:27017"
+
+    volumes:
+      # Production data volume
+      - mongodb-data-prod:/data/db
+      - mongodb-config-prod:/data/configdb
+
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 1G
+        reservations:
+          cpus: "0.5"
+          memory: 512M
+
+    # Health check
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+    networks:
+      - app-network
+
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+    # Security options
+    security_opt:
+      - no-new-privileges:true
+
+# ============================================
+# NETWORKS
+# ============================================
+networks:
+  app-network:
+    driver: bridge
+    name: nodejs-mongodb-network-prod
+
+# ============================================
+# VOLUMES
+# ============================================
+volumes:
+  mongodb-data-prod:
+    driver: local
+    name: mongodb-data-prod
+
+  mongodb-config-prod:
+    driver: local
+    name: mongodb-config-prod
+# ============================================
+# PRODUCTION DEPLOYMENT NOTES
+# ============================================
+# 1. Create a .env file with secure credentials:
+#    MONGO_ROOT_USERNAME=your_secure_username
+#    MONGO_ROOT_PASSWORD=your_secure_password
+#
+# 2. Update MONGO_URI in app service to include credentials:
+#    MONGO_URI=mongodb://username:password@mongodb:27017/dockerapp?authSource=admin
+#
+# 3. Deploy using:
+#    docker-compose -f docker-compose.prod.yml up -d
+#
+# 4. Consider using Docker Swarm or Kubernetes for orchestration
+#
+# 5. Set up proper monitoring and logging solutions
+#
+# 6. Regular backups of mongodb-data-prod volume
+#
+# 7. Use secrets management (Docker Secrets, Kubernetes Secrets, etc.)
+#    instead of environment variables for sensitive data
+# ============================================

@@ -1,0 +1,61 @@
+{
+  // TypeScript Compiler Configuration
+  // This file tells TypeScript how to compile .ts files to .js files
+  "compilerOptions": {
+    // Target JavaScript version
+    // ES2020 is modern and well-supported by Node.js 20
+    "target": "ES2020",
+
+    // Module system to use
+    // CommonJS is the standard for Node.js
+    "module": "commonjs",
+
+    // Output directory for compiled JavaScript files
+    // All .ts files will be compiled to .js in the 'dist' folder
+    "outDir": "./dist",
+
+    // Root directory of TypeScript source files
+    "rootDir": "./src",
+
+    // Enable all strict type-checking options
+    // This helps catch bugs early with strong type safety
+    "strict": true,
+
+    // Generate source maps for debugging
+    // Allows debugging TypeScript code even though JavaScript runs
+    "sourceMap": true,
+
+    // Emit declarations (.d.ts files)
+    "declaration": true,
+
+    // Allow importing .json files
+    "resolveJsonModule": true,
+
+    // Ensure consistent casing in imports
+    "forceConsistentCasingInFileNames": true,
+
+    // Skip type checking of declaration files for faster builds
+    "skipLibCheck": true,
+
+    // Enable interoperability between CommonJS and ES Modules
+    "esModuleInterop": true,
+
+    // Module resolution strategy
+    "moduleResolution": "node",
+
+    // Include type definitions for Node.js
+    "types": ["node"],
+
+    // Remove comments in output files to reduce size
+    "removeComments": true,
+
+    // Do not emit files if any errors occur
+    "noEmitOnError": true
+  },
+
+  // Files to include in compilation
+  "include": ["src/**/*"],
+
+  // Files to exclude from compilation
+  "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts"]
+}
