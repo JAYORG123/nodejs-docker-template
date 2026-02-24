@@ -1,7 +1,8 @@
 // Import required modules with TypeScript types
-import express, { Request, Response } from "express";
+import express from "express";
 import mongoose, { Schema, Document } from "mongoose";
 import dotenv from "dotenv";
+import { registerRequestHandlers } from "./requestHandlers";
 
 // Load environment variables
 dotenv.config();
@@ -56,128 +57,9 @@ mongoose
     // process.exit(1);
   });
 
-// Routes
-
-// Health check endpoint
-app.get("/health", (req: Request, res: Response) => {
-  res.json({
-    status: "OK",
-    timestamp: new Date().toISOString(),
-    database:
-      mongoose.connection.readyState === 1 ? "Connected" : "Disconnected",
-  });
-});
-
-// Get all tasks
-app.get("/api/tasks", async (req: Request, res: Response) => {
-  try {
-    const tasks = await Task.find().sort({ createdAt: -1 });
-    res.json({
-      success: true,
-      count: tasks.length,
-      data: tasks,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: error instanceof Error ? error.message : "Unknown error",
-    });
-  }
-});
-
-// Create a new task
-app.post("/api/tasks", async (req: Request, res: Response) => {
-  try {
-    const { title } = req.body;
-
-    if (!title) {
-      return res.status(400).json({
-        success: false,
-        error: "Title is required",
-      });
-    }
-
-    const task = await Task.create({ title });
-    res.status(201).json({
-      success: true,
-      data: task,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: error instanceof Error ? error.message : "Unknown error",
-    });
-  }
-});
-
-// Update a task
-app.put("/api/tasks/:id", async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-    const task = await Task.findByIdAndUpdate(id, req.body, {
-      new: true,
-      runValidators: true,
-    });
-
-    if (!task) {
-      return res.status(404).json({
-        success: false,
-        error: "Task not found",
-      });
-    }
-
-    res.json({
-      success: true,
-      data: task,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: error instanceof Error ? error.message : "Unknown error",
-    });
-  }
-});
-
-// Delete a task
-app.delete("/api/tasks/:id", async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-    const task = await Task.findByIdAndDelete(id);
-
-    if (!task) {
-      return res.status(404).json({
-        success: false,
-        error: "Task not found",
-      });
-    }
-
-    res.json({
-      success: true,
-      message: "Task deleted successfully",
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: error instanceof Error ? error.message : "Unknown error",
-    });
-  }
-});
-
-// Root endpoint
-app.get("/", (req: Request, res: Response) => {
-  res.json({
-    message:
-      "🐳 Welcome to Docker Node.js + MongoDB API (TypeScript), Changes - 3",
-    endpoints: {
-      health: "GET /health",
-      tasks: {
-        getAll: "GET /api/tasks",
-        create: "POST /api/tasks",
-        update: "PUT /api/tasks/:id",
-        delete: "DELETE /api/tasks/:id",
-      },
-    },
-  });
+registerRequestHandlers(app, {
+  Task,
+  mongoConnection: mongoose.connection,
 });
 
 // Start the server and store the server instance
