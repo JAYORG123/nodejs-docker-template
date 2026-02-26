@@ -8,7 +8,7 @@ interface RouteDependencies {
 
 export const registerRequestHandlers = (
   app: Express,
-  { Task, mongoConnection }: RouteDependencies
+  { Task, mongoConnection }: RouteDependencies,
 ) => {
   app.get("/health", (req: Request, res: Response) => {
     res.json({
@@ -111,7 +111,8 @@ export const registerRequestHandlers = (
 
   app.get("/", (req: Request, res: Response) => {
     res.json({
-      message: "🐳 Welcome to Docker Node.js + MongoDB API (TypeScript), Changes - 3",
+      message:
+        "🐳 Welcome to Docker Node.js + MongoDB API (TypeScript), Changes - 3",
       endpoints: {
         health: "GET /health",
         tasks: {
